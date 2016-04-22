@@ -62,8 +62,8 @@ class ApplicationSystem {
   virtual bool LaunchFromCommandLine(const base::CommandLine& cmd_line,
                                      const GURL& url);
 
-  void CreateExtensions(content::RenderProcessHost* host,
-                        extensions::XWalkExtensionVector* extensions);
+//  void CreateExtensions(content::RenderProcessHost* host,
+//                        extensions::XWalkExtensionVector* extensions);
 
  protected:
   explicit ApplicationSystem(XWalkBrowserContext* browser_context);

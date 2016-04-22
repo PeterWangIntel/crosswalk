@@ -1,0 +1,103 @@
+static_library("sysapps") {
+  deps = [
+    "//base:base",
+    "//net/net:net",
+    "//ui/base",
+    "//ui/gfx:gfx",
+    "//ui/gfx/geometry:geometry",
+    "//xwalk/extensions",
+    ":xwalk_sysapps_resources",
+  ]
+
+#"../xwalk_jsapi.gypi",
+
+  sources = [
+    "common/binding_object.h",
+    "common/binding_object_store.cc",
+    "common/binding_object_store.h",
+    "common/common.idl",
+    "common/event_target.cc",
+    "common/event_target.h",
+    "common/sysapps_manager.cc",
+    "common/sysapps_manager.h",
+    "common/sysapps_manager_android.cc",
+    "common/sysapps_manager_linux.cc",
+    "common/sysapps_manager_mac.cc",
+    "common/sysapps_manager_win.cc",
+    "device_capabilities/av_codecs_provider.h",
+    "device_capabilities/av_codecs_provider_android.cc",
+    "device_capabilities/av_codecs_provider_android.h",
+    "device_capabilities/cpu_info_provider.cc",
+    "device_capabilities/cpu_info_provider.h",
+    "device_capabilities/cpu_info_provider_android.cc",
+    "device_capabilities/cpu_info_provider_linux.cc",
+    "device_capabilities/cpu_info_provider_mac.cc",
+    "device_capabilities/cpu_info_provider_win.cc",
+    "device_capabilities/device_capabilities.idl",
+    "device_capabilities/device_capabilities_extension.cc",
+    "device_capabilities/device_capabilities_extension.h",
+    "device_capabilities/device_capabilities_object.cc",
+    "device_capabilities/device_capabilities_object.h",
+    "device_capabilities/display_info_provider.cc",
+    "device_capabilities/display_info_provider.h",
+    "device_capabilities/memory_info_provider.cc",
+    "device_capabilities/memory_info_provider.h",
+    "device_capabilities/storage_info_provider.cc",
+    "device_capabilities/storage_info_provider.h",
+    "device_capabilities/storage_info_provider_android.cc",
+    "device_capabilities/storage_info_provider_android.h",
+    "raw_socket/raw_socket.idl",
+    "raw_socket/raw_socket_extension.cc",
+    "raw_socket/raw_socket_extension.h",
+    "raw_socket/raw_socket_object.cc",
+    "raw_socket/raw_socket_object.h",
+    "raw_socket/tcp_server_socket.idl",
+    "raw_socket/tcp_server_socket_object.cc",
+    "raw_socket/tcp_server_socket_object.h",
+    "raw_socket/tcp_socket.idl",
+    "raw_socket/tcp_socket_object.cc",
+    "raw_socket/tcp_socket_object.h",
+    "raw_socket/udp_socket.idl",
+    "raw_socket/udp_socket_object.cc",
+    "raw_socket/udp_socket_object.h",
+  ],
+
+  if (!is_android) {
+    deps += [
+              "components/storage_monitor:storage_monitor",
+              "//media",
+              "//third_party/ffmpeg",
+            ],
+
+    sources += [
+                 "device_capabilities/av_codecs_provider_ffmpeg.cc",
+                 "device_capabilities/av_codecs_provider_ffmpeg.h",
+                 "device_capabilities/storage_info_provider_chromium.cc",
+                 "device_capabilities/storage_info_provider_chromium.h",
+               ],
+  }
+
+  if (!is_win) {
+#          'link_settings': {
+#            'libraries': [
+#              '-lPdh.lib',
+#            ],
+#          },
+  }
+
+  include_dirs = [ "$root_out_dir" ]
+}
+
+copy("xwalk_sysapps_resources") {
+  sources = ["$root_out_dir/xwalk/xwalk_sysapps_resources.grd"]
+  outputs = ["$root_out_dir/{{source_file_part}}"]
+}
+
+import("//tools/grit/grit_rule.gni")
+grit("generate_xwalk_sysapps_resources") {
+  deps = [":xwalk_sysapps_resources"]
+  source = ["sysapps_resources.grd"]
+  output = ["$root_out_dir/xwalk/xwalk_sysapps_resources.grd"]
+}
+
+

@@ -1,0 +1,245 @@
+#
+
+declare_args() {
+  reflection_java_dir = "$root_out_dir/gen/xwalk_core_reflection_layer",
+  internal_dir = "runtime/android/core_internal/src/org/xwalk/core/internal",
+  android_unmangled_name = 1,
+}
+
+shared_library("libxwalkcore") {
+
+  deps = [
+           "//components/components:auto_login_parser",
+           "//components/components:cdm_browser",
+           "//components/components:cdm_renderer",
+           "//components/components:navigation_interception",
+           "//components/components:visitedlink_browser",
+           "//components/components:visitedlink_renderer",
+           "//components/components:web_contents_delegate_android",
+           "//skia/skia:skia",
+           "//third_party/mojo/mojo_public.gyp:mojo_cpp_bindings",
+           "xwalk_core_extensions_native_jni",
+           "xwalk_core_jar_jni",
+           "xwalk_core_native_jni",
+           ":xwalk_runtime",
+  ]
+
+  include_dirs = [
+    ".."
+  ]
+
+  ldflags = [
+    "-Wl,--no-fatal-warnings",
+  ]
+
+  sources = [
+    "runtime/app/android/xwalk_entry_point.cc",
+    "runtime/app/android/xwalk_jni_registrar.cc",
+    "runtime/app/android/xwalk_jni_registrar.h",
+  ]
+}
+
+java_strings_grd("xwalk_core_strings") {
+  grd_file = "../xwalk/runtime/android/core_internal/strings/android_xwalk_strings.grd"
+  outputs = []
+}
+
+java_strings_grd("xwalk_app_strings") {
+  grd_file = "../xwalk/runtime/android/core/strings/xwalk_app_strings.grd",
+  outputs = []
+}
+
+action("xwalk_core_reflection_layer_java_gen") {
+  script = "//xwalk/tools/reflection_generator/reflection_generator.py"
+  outputs = [ "$reflection_java_dir/gen.timestamp" ]
+  args = [
+           "--input-dir",
+           "runtime/android/core_internal/src/org/xwalk/core/internal",
+           "--template-dir",
+           "runtime/android/templates",
+           "--bridge-output",
+           "$reflection_java_dir/bridge",
+           "--wrapper-output",
+           "$reflection_java_dir/wrapper",
+           "--stamp",
+           "$reflection_java_dir/gen.timestamp"
+           "--api-version=$api_version",
+           "--min-api-version=$min_api_version",
+           "--verify-xwalk-apk=$verify_xwalk_apk",
+           "--xwalk-build-version=$xwalk_version",
+  ]
+}
+
+android_library("xwalk_core_internal_java") {
+  deps = [
+        "//components/components:navigation_interception_java",
+        "//components/components:web_contents_delegate_android_java",
+        "//content/content:content_java",
+        "//ui/android/ui_android:ui_java",
+        ":xwalk_core_extensions_java",
+        ":xwalk_core_strings",
+        ":xwalk_core_reflection_layer_java_gen",
+  ]
+
+#      "variables": {
+#        "java_in_dir": "runtime/android/core_internal",
+#        "has_java_resources": 1,
+#        "R_package": "org.xwalk.core.internal",
+#        "R_package_relpath": "org/xwalk/core/internal",
+#        "additional_input_paths": [ ">(reflection_layer_gen_timestamp)" ],
+#        "generated_src_dirs": [
+#          "<(reflection_java_dir)/bridge",
+#        ],
+#      },
+}
+
+android_library("lzma_sdk_java") {
+  DEPRECATED_java_in_dir = "//xwalk/third_party/lzma_sdk/src"
+}
+
+android_library("xwalk_core_java") {
+  deps = [
+        "xwalk_core_reflection_layer_java_gen",
+        "xwalk_app_strings",
+        ":lzma_sdk_java",
+  ]
+
+  DEPRECATED_java_in_dir = "runtime/android/core"
+}
+
+generate_jni("xwalk_core_jar_jni") {
+  sources = "input_java_class": "java/io/InputStream.class"
+  jni_package = "xwalk"
+}
+
+generate_jni("xwalk_core_native_jni") {
+  sources = [
+    "runtime/android/core_internal/src/org/xwalk/core/internal/AndroidProtocolHandler.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkAutofillClientAndroid.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkContent.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkContentLifecycleNotifier.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkContentsClientBridge.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkContentsIoThreadClient.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkCookieManagerInternal.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkDevToolsServer.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkHttpAuthHandlerInternal.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkPathHelper.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkPresentationHost.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkSettingsInternal.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkViewDelegate.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkWebContentsDelegate.java",
+    "runtime/android/core_internal/src/org/xwalk/core/internal/XWalkWebResourceResponseInternal.java",
+  ]
+  jni_package = "xwalk"
+}
+
+android_library("xwalk_core_extensions_java") {
+  deps = ["//content/content:content_java"]
+  java_files = [
+    "//xwalk/extensions/android/java/src/org/xwalk/core/internal/extensions/XWalkExtensionAndroid.java",                                                                                                         "//xwalk/extensions/android/java/src/org/xwalk/core/internal/extensions/XWalkNativeExtensionLoaderAndroid.java",
+  ]
+}
+
+generate_jni("xwalk_core_extensions_native_jni") {
+  sources = [
+    "//xwalk/extensions/android/java/src/org/xwalk/core/internal/extensions/XWalkExtensionAndroid.java",
+    "//xwalk/extensions/android/java/src/org/xwalk/core/internal/extensions/XWalkNativeExtensionLoaderAndroid.java",
+  ]
+  jni_package = "xwalk"
+}
+
+android_resources("xwalk_runtime_lib_lzma_apk_resources") {
+  resource_dir = "//xwalk/runtime/android/runtime_lib/res"
+}
+
+android_apk("xwalk_runtime_lib_lzma_apk") {
+  apk_name = "XWalkRuntimeLibLzma"
+  deps = [
+    ":xwalk_runtime_lib_lzma_apk_resources"
+    ":xwalk_runtime_lib_apk"
+  ]
+
+  DEPRECATED_java_in_dir = "//xwalk/runtime/android/runtime_lib"
+  asset_location = "$root_out_dir/xwalk_runtime_lib_lzma/assets"
+}
+
+android_resources("xwalk_runtime_lib_apk_resources") {
+  deps = [] 
+  resource_dirs = "//xwalk/runtime/android/runtime_lib/res"
+  custom_package = "org.xwalk.runtime"
+}
+
+android_apk("xwalk_runtime_lib_apk") {
+  apk_name = "XWalkRuntimeLib"
+  android_manifest = "//xwalk/runtime/android/runtime_lib/AndroidManifest.xml"
+  DEPRECATED_java_in_dir = "//xwalk/runtime/android/runtime_lib"
+  native_libs = [
+    "libxwalkcore"
+  ]
+  deps = [
+    ":xwalk_runtime_lib_apk_resources",
+    "libxwalkcore",
+    ":xwalk_core_internal_java",
+    ":xwalk_runtime_lib_apk_extension",
+    ":xwalk_runtime_lib_apk_pak",
+  ]
+  data_deps = [
+    "$root_out_dir/xwalk_runtime_lib/assets/jsapi/contacts_api.js",
+    "$root_out_dir/xwalk_runtime_lib/assets/jsapi/device_capabilities_api.js",
+    "$root_out_dir/xwalk_runtime_lib/assets/jsapi/launch_screen_api.js",
+    "$root_out_dir/xwalk_runtime_lib/assets/jsapi/messaging_api.js",
+    "$root_out_dir/xwalk_runtime_lib/assets/jsapi/wifidirect_api.js",
+    "$root_out_dir/xwalk_runtime_lib/assets/xwalk.pak",
+  ]
+  if (icu_use_data_file_flag) {
+    data_deps +=  [
+      "$root_out_dir/xwalk_runtime_lib/assets/icudtl.dat",
+    ]
+  }
+  if (v8_use_external_startup_data) {
+    data_deps += [
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
+    ]
+  }
+  asset_location = "$root_out_dir/xwalk_runtime_lib/assets"
+}
+
+action("runtime_lib_lzma") {
+  script = "//xwalk/build/android/lzma_compress.py"
+  args = [
+            "--mode=compress",
+            "--dest-path=$root_out_dir/xwalk_runtime_lib/assets",
+            "--sources=$root_out_dir/xwalk_runtime_lib/assets/xwalk.pak $root_out_dir/xwalk_runtime_lib/assets/icudtl.dat $root_gen_dir/stripped_libraries/libxwalkcore.so",
+  ]
+  outputs = [
+
+  ]
+}
+
+copy("xwalk_runtime_lib_apk_pak") {
+  public_deps = [":xwalk_pak"]
+
+  sources = ["$root_out_dir/xwalk.pak"]
+  if (icu_use_data_file_flag) {
+    sources += ["$root_out_dir/icudtl.dat"]
+  }
+  if (v8_use_external_startup_data) {
+    sources += [
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
+    ]
+  }
+  outputs = ["$root_out_dir/xwalk_runtime_lib/assets/{{source_file_part}}"]
+}
+
+copy("xwalk_runtime_lib_apk_extension") {
+  sources = [
+            "experimental/launch_screen/launch_screen_api.js",
+            "experimental/wifidirect/wifidirect_api.js",
+            "runtime/android/core_internal/src/org/xwalk/core/internal/extension/api/contacts/contacts_api.js",
+            "runtime/android/core_internal/src/org/xwalk/core/internal/extension/api/device_capabilities/device_capabilities_api.js",
+            "runtime/android/core_internal/src/org/xwalk/core/internal/extension/api/messaging/messaging_api.js",
+  ] 
+  outputs = ["$root_out_dir/xwalk_runtime_lib/assets/jsapi/{{source_file_part}}"]
+}

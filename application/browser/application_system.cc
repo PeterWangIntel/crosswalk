@@ -14,8 +14,8 @@
 #include "xwalk/application/browser/application_service.h"
 #include "xwalk/application/common/application_manifest_constants.h"
 #include "xwalk/application/common/id_util.h"
-#include "xwalk/application/extension/application_runtime_extension.h"
-#include "xwalk/application/extension/application_widget_extension.h"
+//#include "xwalk/application/extension/application_runtime_extension.h"
+//#include "xwalk/application/extension/application_widget_extension.h"
 #include "xwalk/runtime/browser/xwalk_browser_context.h"
 #include "xwalk/runtime/common/xwalk_switches.h"
 
@@ -75,7 +75,7 @@ bool ApplicationSystem::LaunchFromCommandLine(
   return false;
 }
 
-void ApplicationSystem::CreateExtensions(
+/*void ApplicationSystem::CreateExtensions(
     content::RenderProcessHost* host,
     extensions::XWalkExtensionVector* extensions) {
   Application* application =
@@ -87,7 +87,7 @@ void ApplicationSystem::CreateExtensions(
   // Register the widget extension only when the application is widget format.
   if (application->data()->manifest_type() == Manifest::TYPE_WIDGET)
       extensions->push_back(new ApplicationWidgetExtension(application));
-}
+}*/
 
 }  // namespace application
 }  // namespace xwalk

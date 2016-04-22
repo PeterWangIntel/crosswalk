@@ -96,8 +96,8 @@ void XWalkRunner::CreateComponents() {
   app_component_ = app_component.get();
   AddComponent(std::move(app_component));
 
-  if (XWalkRuntimeFeatures::isSysAppsEnabled())
-    AddComponent(CreateSysAppsComponent());
+//  if (XWalkRuntimeFeatures::isSysAppsEnabled())
+//    AddComponent(CreateSysAppsComponent());
   if (XWalkRuntimeFeatures::isStorageAPIEnabled())
     AddComponent(CreateStorageComponent());
 }
@@ -119,9 +119,9 @@ scoped_ptr<ApplicationComponent> XWalkRunner::CreateAppComponent() {
   return make_scoped_ptr(new ApplicationComponent(browser_context_.get()));
 }
 
-scoped_ptr<SysAppsComponent> XWalkRunner::CreateSysAppsComponent() {
-  return make_scoped_ptr(new SysAppsComponent());
-}
+//scoped_ptr<SysAppsComponent> XWalkRunner::CreateSysAppsComponent() {
+//  return make_scoped_ptr(new SysAppsComponent());
+//}
 
 scoped_ptr<StorageComponent> XWalkRunner::CreateStorageComponent() {
   return make_scoped_ptr(new StorageComponent());

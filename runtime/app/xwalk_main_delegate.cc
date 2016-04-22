@@ -125,6 +125,7 @@ void XWalkMainDelegate::InitializeResourceBundle() {
 #if defined(OS_MACOSX)
   pak_file = GetResourcesPakFilePath();
 #else
+
   base::FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
   DCHECK(!pak_dir.empty());

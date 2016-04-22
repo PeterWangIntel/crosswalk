@@ -1,0 +1,312 @@
+# Copyright (c) 2013 Intel Corporation. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+declare_args() {
+  core_internal_empty_embedder_apk_name = "XWalkCoreInternalEmptyEmbedder",
+  core_empty_embedder_apk_name = "XWalkCoreEmptyEmbedder",
+}
+
+
+action("xwalk_core_library_documentation") {
+  deps = [
+    "xwalk_core_library_java_app_part"
+  ]
+
+  api_files = [
+    "//xwalk/runtime/android/core/src/org/xwalk/core/JavascriptInterface.java",
+    "//xwalk/runtime/android/core/src/org/xwalk/core/XWalkActivity.java",
+    "//xwalk/runtime/android/core/src/org/xwalk/core/XWalkInitializer.java",
+    "//xwalk/runtime/android/core/src/org/xwalk/core/XWalkUpdater.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/ClientCertRequest.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkCookieManager.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkDownloadListener.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkExtension.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkGetBitmapCallback.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkHttpAuthHandler.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkJavascriptResult.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkNativeExtensionLoader.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkNavigationHistory.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkNavigationItem.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkPreferences.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkResourceClient.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkSettings.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkUIClient.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkView.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkWebResourceRequest.java",
+    ">(reflection_gen_dir)/wrapper/org/xwalk/core/XWalkWebResourceResponse.java",
+  ]
+
+  script = "javadoc"
+  args = [
+            "-quiet",
+            "-XDignore.symbol.file",
+            "-d", "$root_out_dir/xwalk_core_library_docs",
+            "-classpath", "<(android_sdk)/android.jar",
+            "-bootclasspath",
+            "$root_out_dir/lib.java/xwalk_core_library_java_app_part.jar",
+            "$api_files",
+  ] 
+  outputs = [ "$root_out_dir/xwalk_core_library_docs" ]
+}
+
+action("pack_xwalk_core_library") {
+  deps = [
+        "xwalk_core_library",
+        "xwalk_core_library_src",
+  ]
+  script = "//xwalk/tools/tar.py"
+  outputs = "$root_out_dir/pack_xwalk_core_library_intermediate/always_run"
+  args = [
+    "$root_out_dir/xwalk_core_library"
+  ]
+}
+
+action("pack_xwalk_core_library_src") {
+  script = ["//xwalk/tools/tar.py"]
+  outputs = ["$root_out_dir/pack_xwalk_core_library_src_intermediate/always_run"]
+  args = [
+           "$root_out_dir/xwalk_core_library_src"
+  ]
+}
+
+action("pack_xwalk_shared_library") {
+  deps = ["xwalk_shared_library"]
+  script = ["//xwalk/tools/tar.py"]
+  outputs = ["$root_out_dir/pack_xwalk_shared_library_intermediate/always_run"]
+  args =[
+    "$root_out_dir/xwalk_shared_library"
+  ]
+}
+
+action("generate_resource_maps") {
+  deps = [ "xwalk_core_internal_java" ]
+  script = "build/android/generate_resource_map.py"
+  args = [
+    "--gen-dir", "$root_out_dir/gen",
+    "--resource-map-dir", "$root_out_dir/resource_map",
+    "--stamp", "<(resource_map_dir)/gen.timestamp",
+  ]
+  outputs = [
+    "$root_out_dir/generate_resource_maps_intermediate/always_run",
+    "<(resource_map_dir)/gen.timestamp",
+  ]
+}
+
+android_apk("xwalk_core_internal_empty_embedder_apk") {
+  deps = [
+        ":generate_resource_maps",
+        ":libxwalkdummy",
+  ]
+  apk_name = "$core_internal_empty_embedder_apk_name"
+  DEPRECATED_java_in_dir = "runtime/android/core_internal_empty"
+  data_deps = [ ">(resource_map_gen_timestamp)" ]
+  native_libs = "libxwalkdummy"
+
+#        "generated_src_dirs": [
+#           "<(PRODUCT_DIR)/resource_map",
+#        ],
+#        "additional_bundled_libs": [
+#          "<(PRODUCT_DIR)/lib/libxwalkcore.>(android_product_extension)",
+#        ],
+#      },
+#      "all_dependent_settings": {
+#        "variables": {
+#          "input_jars_paths": ["<(javac_jar_path)"],
+#        },
+#     },
+}
+
+android_apk("xwalk_core_empty_embedder_apk") {
+  deps = [
+    ":xwalk_core_library",
+    ":generate_resource_maps",
+  ]
+
+  apk_name = "$core_empty_embedder_apk_name",
+  DEPRECATED_java_in_dir = "runtime/android/core_internal_empty"
+#  "additional_input_paths": [ ">(resource_map_gen_timestamp)" ],
+}
+
+action("xwalk_core_library_java_app_part") {
+  deps = [ "xwalk_core_java" ]
+      "variables": {
+        "jar_name": "${target_name}.jar",
+        "jar_final_path": "$root_out_dir/lib.java/<(jar_name)",
+  }
+  script = "build/android/merge_jars.py"
+  outputs = [ "$root_out_dir/lib.java/${target_name}.jar" ]
+  args = [
+           "--build-dir=$root_out_dir",
+           "--jars=${target_gen_dir}/${target_name}",
+           "--output-jar =$root_out_dir/lib.java/${target_name}.jar",
+  ]
+}
+
+action("xwalk_core_library_java_library_part") {
+  deps = [
+    "xwalk_core_internal_empty_embedder_apk"
+  ]
+  script = "build/android/merge_jars.py"
+  args =  [
+    "--build-dir=$root_out_dir",
+    "--jars=>(input_jars_paths)",
+    "--output-jar=$root_out_dir/lib.java/$jar_name",
+  ]
+  outputs = [ "$root_out_dir/lib.java/$jar_name" ]
+}
+ 
+action("xwalk_core_library_java") {
+  deps = [
+           "xwalk_core_library_java_app_part",
+           "xwalk_core_library_java_library_part",
+  ]
+  script = "build/android/merge_jars.py"
+  args = [
+    "--build-dir=<(PRODUCT_DIR)",
+    "--jars=>(input_jars_paths)",
+    "--output-jar=<(jar_final_path)",
+  ]
+  outputs = [ "$root_out_dir/lib.java/$jar_name" ]
+}
+
+action("xwalk_core_library") {
+  deps = [
+    ":xwalk_core_shell_apk",
+    ":xwalk_core_library_java",
+  ]
+  script = "//xwalk/build/android/generate_xwalk_core_library.py"
+  args = [
+    "-s", "//xwalk",
+    "-t", "$root_out_dir",
+  ]
+  outputs = [
+    "$root_out_dir/xwalk_core_library_intermediate/always_run"
+  ]
+}
+
+action("xwalk_shared_library") {
+  deps = [
+    ":xwalk_core_library_java"
+  ]
+  script = "//xwalk/build/android/generate_xwalk_core_library.py"
+  args =[
+    "-s", "//xwalk",
+    "-t", "$root_out_dir",
+    "--shared",
+  ]
+  outputs = [ "$root_out_dir/xwalk_shared_library_intermediate/always_run" ]
+}
+
+#    {
+#      "target_nai "xwalk_core_library_src",
+#      "type": "none",
+#      "dependencies": [
+#        "xwalk_core_library",
+#      ],
+#      "variables": {
+         # TODO(wang16): This list is hard coded for now. It might be broken by rebase to
+         #               chromium new base. Need to check manually after each rebase.
+#        "java_source_dirs": [
+#          "<(DEPTH)/base/android/java/src",
+#          "<(DEPTH)/components/web_contents_delegate_android/android/java/src",
+#          "<(DEPTH)/components/navigation_interception/android/java/src",
+#          "<(DEPTH)/content/public/android/java/src",
+#          "<(DEPTH)/media/base/android/java/src",
+#          "<(DEPTH)/net/android/java/src",
+#          "<(DEPTH)/ui/android/java/src",
+#          "<(DEPTH)/xwalk/extensions/android/java/src",
+#          "<(DEPTH)/xwalk/runtime/android/core/src",
+#          "<(DEPTH)/xwalk/runtime/android/core_internal/src",
+#          "<(PRODUCT_DIR)/gen/enums/bitmap_format_java",
+#          "<(PRODUCT_DIR)/gen/enums/window_open_disposition_java",
+#          "<(PRODUCT_DIR)/gen/templates",
+#          "<(PRODUCT_DIR)/resource_map",
+          # NativeLibraries.java must be copied later than gen/templates to override the empty
+          # NativeLibraries.java in gen/templates.
+#          "<(PRODUCT_DIR)/xwalk_core_internal_empty_embedder_apk/native_libraries_java/NativeLibraries.java",
+#          ">(reflection_gen_dir)/bridge",
+#          ">(reflection_gen_dir)/wrapper",
+#        ],
+#      },
+#    }
+action("generate_xwalk_core_library_src_package") {
+  script = "//xwalk/build/android/generate_xwalk_core_library.py"
+  outputs = [
+              "$root_out_dir/xwalk_core_library_src/always_run",
+              "$root_out_dir/xwalk_core_library_src/src/README.md",
+  ]
+  args = [
+           "-s",  "<(DEPTH)",
+           "-t", "<(PRODUCT_DIR)",
+           "--src-package",
+  ]
+}
+
+action("copy_xwalk_core_library_src") {
+  script = "build/android/merge_java_srcs.py"
+  outputs = [ "$root_out_dir/xwalk_core_library_src/copy_src_always_run" ]
+  args = [
+           "--dirs=>(java_source_dirs)",
+           "--target-path=$root_out_dir/xwalk_core_library_src/src"
+  ]
+}
+
+# remove "build/android/maven_pom.gypi" and call "build/util/version.py" directly
+action("xwalk_core_library_pom_gen") {
+  script = "//xwalk/build/util/version.py"
+  args = [
+    "-i",
+    "//xwalk/runtime/android/maven/xwalk_core_library.pom.xml.in",
+    "-o",
+    "$root_out_dir/xwalk_core_library.pom.xml"
+    "-e",
+    "ARTIFACT_ID=${xwalk_core_library_artifact_id}",
+    "-e",
+    "ARTIFACT_VERSION=${xwalk_version}",
+  ]
+  outputs = ["$root_out_dir/xwalk_core_library.pom.xml"]
+}
+
+action("xwalk_shared_library_pom_gen") {
+  script = "//xwalk/build/util/version.py"
+  args = [
+    "-i",
+    "//xwalk/runtime/android/maven/xwalk_shared_library.pom.xml.in",
+    "-o",
+    "$root_out_dir/xwalk_shared_library.pom.xml"
+    "-e",
+    "ARTIFACT_ID=${xwalk_shared_library_artifact_id}",
+    "-e",
+    "ARTIFACT_VERSION=${xwalk_version}",
+  ]
+  outputs = ["$root_out_dir/xwalk_shared_library.pom.xml"]
+}
+
+action("xwalk_core_library_aar") {
+  deps = [
+    "xwalk_core_library",
+    "xwalk_core_empty_embedder_apk",
+    "xwalk_core_library_pom_gen",
+  ]
+  script = "//xwalk/build/android/generate_xwalk_core_library_aar.py"
+  args = [
+    "-t",
+    "$root_out_dir",
+  ]
+  outputs = [ "$root_out_dir/xwalk_core_library_src/copy_src_always_run" ]
+}
+
+action("xwalk_shared_library_aar") {
+  deps = [
+    "xwalk_core_empty_embedder_apk",
+    "xwalk_shared_library",
+    "xwalk_shared_library_pom_gen",
+  ]
+  script = "//xwalk/build/android/generate_xwalk_core_library_aar.py"
+  args = [
+    "-t",
+    "$root_out_dir",
+    "--shared",
+  ]
+}

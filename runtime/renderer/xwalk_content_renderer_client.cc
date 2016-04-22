@@ -16,7 +16,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/xwalk_application_resources.h"
-#include "grit/xwalk_sysapps_resources.h"
+//#include "grit/xwalk_sysapps_resources.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -175,7 +175,7 @@ void XWalkContentRendererClient::RenderViewCreated(
 
 void XWalkContentRendererClient::DidCreateModuleSystem(
     extensions::XWalkModuleSystem* module_system) {
-  scoped_ptr<extensions::XWalkNativeModule> app_module(
+/*  scoped_ptr<extensions::XWalkNativeModule> app_module(
       new application::ApplicationNativeModule());
   module_system->RegisterNativeModule("application", std::move(app_module));
   scoped_ptr<extensions::XWalkNativeModule> isolated_file_system_module(
@@ -187,6 +187,8 @@ void XWalkContentRendererClient::DidCreateModuleSystem(
   module_system->RegisterNativeModule("widget_common",
       extensions::CreateJSModuleFromResource(
           IDR_XWALK_APPLICATION_WIDGET_COMMON_API));
+*/
+(void) module_system;
 }
 
 const void* XWalkContentRendererClient::CreatePPAPIInterface(

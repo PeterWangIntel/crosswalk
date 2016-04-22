@@ -21,7 +21,7 @@ void ApplicationComponent::CreateUIThreadExtensions(
     extensions::XWalkExtensionVector* extensions) {
   if (!XWalkRuntimeFeatures::isApplicationAPIEnabled())
     return;
-  app_system_->CreateExtensions(host, extensions);
+//  app_system_->CreateExtensions(host, extensions);
 }
 
 void ApplicationComponent::CreateExtensionThreadExtensions(

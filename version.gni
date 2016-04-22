@@ -1,0 +1,30 @@
+#
+# output has problem
+
+template("process_version") {
+
+  action_name = "generate_version"
+  source_set_name = target_name
+
+  action(action_name) {
+    visibility = [ ":$source_set_name" ]
+    script = "//build/util/version.py"
+
+    args = []
+
+    args += [
+      "-f",
+      rebase_path(invoker.version_path, root_build_dir),
+      "-t",
+      "@MAJOR@.@MINOR@.@BUILD@.@PATCH@",
+    ]
+  }
+
+  outputs = []
+
+  source_set(source_set_name) {
+    public_deps = [
+      ":$action_name",
+    ]
+  }
+}

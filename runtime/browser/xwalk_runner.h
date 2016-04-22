@@ -95,7 +95,7 @@ class XWalkRunner {
   // These specific factory functions are used to allow ports to customize
   // components.
   virtual scoped_ptr<ApplicationComponent> CreateAppComponent();
-  virtual scoped_ptr<SysAppsComponent> CreateSysAppsComponent();
+//  virtual scoped_ptr<SysAppsComponent> CreateSysAppsComponent();
   virtual scoped_ptr<StorageComponent> CreateStorageComponent();
 
  protected:
